@@ -7,14 +7,14 @@ class GridShader {
   options;
   constructor({
     material: i,
-    time: e,
+    time,
     size: t,
     diffuseColor: r,
     diffuseSpeed: s,
     diffuseWidth: l,
     diffuseDir: f,
   }: any) {
-    this.time = e;
+    this.time = time;
     let a = {
       size: 100,
       diffuseSpeed: 15,
@@ -130,9 +130,11 @@ export class MapGrid {
   time;
   instance!: THREE.Group | null;
   options;
-  constructor({ scene: i, time: e }: MapAnimate, t: any) {
-    (this.scene = i), (this.time = e), (this.instance = null);
-    let r = {
+  constructor({ scene, time }: MapAnimate, t: any) {
+    this.scene = scene;
+    this.time = time;
+    this.instance = null;
+    let defaultOptions = {
       position: new THREE.Vector3(0, 0, 0),
       gridSize: 100,
       gridDivision: 20,
@@ -148,116 +150,121 @@ export class MapGrid {
       diffuseColor: 9345950,
       diffuseWidth: 10,
     };
-    (this.options = Object.assign({}, r, t)), this.init();
+    // 合并option
+    this.options = Object.assign({}, defaultOptions, t);
+    this.init();
   }
   init() {
     let gridGroup = new THREE.Group();
     gridGroup.name = "Grid";
-    let e = this.createGridHelp(),
-      t = this.createShapes(),
-      r = this.createPoint();
-    gridGroup.add(e, t, r),
-      gridGroup.position.copy(this.options.position),
-      (this.instance = gridGroup),
-      this.scene.add(gridGroup);
+    let gridHelp = this.createGridHelp();
+    let shapes = this.createShapes();
+    let point = this.createPoint();
+    console.log(point, "point");
+
+    gridGroup.add(gridHelp, shapes, point);
+    gridGroup.position.copy(this.options.position);
+    this.instance = gridGroup;
+    this.scene.add(gridGroup);
   }
   createShapes() {
-    let {
-        gridSize: i,
-        gridDivision: e,
-        shapeSize: t,
-        shapeColor: r,
-      } = this.options,
-      s = i / e,
-      l = i / 2,
-      f = new THREE.MeshBasicMaterial({ color: r, side: 2 }),
-      a = [];
-    for (let p = 0; p < e + 1; p++)
-      for (let h = 0; h < e + 1; h++) {
-        let d = this.createPlus(t);
-        d.translate(-l + p * s, -l + h * s, 0), a.push(d);
+    let { gridSize, gridDivision, shapeSize, shapeColor } = this.options;
+    const s = gridSize / gridDivision;
+    const l = gridSize / 2;
+    const meshBasicMaterial = new THREE.MeshBasicMaterial({
+      color: shapeColor,
+      side: 2,
+    });
+    let a = [];
+    for (let p = 0; p < gridDivision + 1; p++)
+      for (let h = 0; h < gridDivision + 1; h++) {
+        let d = this.createPlus(shapeSize);
+        d.translate(-l + p * s, -l + h * s, 0);
+        a.push(d);
       }
-    let o = BufferGeometryUtils.mergeGeometries(a),
-      u = new THREE.Mesh(o, f);
-    return (
-      (u.renderOrder = -1), u.rotateX(-Math.PI / 2), (u.position.y += 0.01), u
-    );
+
+    const bufferGeometry = BufferGeometryUtils.mergeGeometries(a);
+    const mesh = new THREE.Mesh(bufferGeometry, meshBasicMaterial);
+    mesh.renderOrder = -1;
+    mesh.rotateX(-Math.PI / 2);
+    mesh.position.y += 0.01;
+    return mesh;
   }
   createGridHelp() {
-    let { gridSize: i, gridDivision: e, gridColor: t } = this.options;
-    return new THREE.GridHelper(i, e, t, t);
+    let { gridSize, gridDivision, gridColor } = this.options;
+    return new THREE.GridHelper(gridSize, gridDivision, gridColor, gridColor);
   }
   createPoint() {
     let {
-      gridSize: i,
-      pointSize: e,
-      pointColor: t,
-      pointBlending: r,
-      pointLayout: s,
-      diffuse: l,
+      gridSize,
+      pointSize,
+      pointColor,
+      pointBlending,
+      pointLayout,
+      diffuse,
     } = this.options;
-    const f = s.row,
-      a = s.col,
-      o = new Float32Array(f * a * 3);
-    for (let d = 0; d < f; d++)
-      for (let c = 0; c < a; c++) {
-        let w = (d / (f - 1)) * i - i / 2,
-          S = 0,
-          v = (c / (a - 1)) * i - i / 2,
-          m = (d * a + c) * 3;
-        (o[m] = w), (o[m + 1] = S), (o[m + 2] = v);
+    const row = pointLayout.row;
+    const col = pointLayout.col;
+    const vertices = new Float32Array(row * col * 3);
+
+    for (let d = 0; d < row; d++)
+      for (let c = 0; c < col; c++) {
+        let x = (d / (row - 1)) * gridSize - gridSize / 2;
+        let y = 0;
+        let z = (c / (col - 1)) * gridSize - gridSize / 2;
+        let m = (d * col + c) * 3;
+
+        vertices[m] = x;
+        vertices[m + 1] = y;
+        vertices[m + 2] = z;
       }
-    var u = new THREE.BufferGeometry();
-    // https://threejs.org/docs/#api/en/core/BufferGeometry
-    u.setAttribute("position", new THREE.BufferAttribute(o, 3));
+    const geometry = new THREE.BufferGeometry();
+    console.log(vertices[0], "vertices");
+
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
     let pointsMaterial = new THREE.PointsMaterial({
-      size: e,
+      size: pointSize,
       sizeAttenuation: !0,
-      color: t,
-      blending: r,
+      color: pointColor,
+      blending: pointBlending,
     });
-    const points = new THREE.Points(u, pointsMaterial);
-    return l && this.diffuseShader(pointsMaterial), points;
+    const points = new THREE.Points(geometry, pointsMaterial);
+    return diffuse && this.diffuseShader(pointsMaterial), points;
   }
   setPointMode() {}
   diffuseShader(i: THREE.PointsMaterial) {
-    let {
-      gridSize: e,
-      diffuseColor: t,
-      diffuseSpeed: r,
-      diffuseWidth: s,
-    } = this.options;
+    let { gridSize, diffuseColor, diffuseSpeed, diffuseWidth } = this.options;
     return (
       new GridShader({
         material: i,
         time: this.time,
-        size: e,
-        diffuseColor: t,
-        diffuseSpeed: r,
-        diffuseWidth: s,
+        size: gridSize,
+        diffuseColor: diffuseColor,
+        diffuseSpeed: diffuseSpeed,
+        diffuseWidth: diffuseWidth,
       }),
       !1
     );
   }
-  createPlus(i = 50) {
-    let e = i / 6 / 3,
-      t = i / 3,
-      r = [
-        new THREE.Vector2(-t, -e),
-        new THREE.Vector2(-e, -e),
-        new THREE.Vector2(-e, -t),
-        new THREE.Vector2(e, -t),
-        new THREE.Vector2(e, -t),
-        new THREE.Vector2(e, -e),
-        new THREE.Vector2(t, -e),
-        new THREE.Vector2(t, e),
-        new THREE.Vector2(e, e),
-        new THREE.Vector2(e, t),
-        new THREE.Vector2(-e, t),
-        new THREE.Vector2(-e, e),
-        new THREE.Vector2(-t, e),
-      ],
-      s = new THREE.Shape(r);
-    return new THREE.ShapeGeometry(s, 24);
+  createPlus(size = 50) {
+    let x = size / 6 / 3,
+      y = size / 3;
+    const points = [
+      new THREE.Vector2(-y, -x),
+      new THREE.Vector2(-x, -x),
+      new THREE.Vector2(-x, -y),
+      new THREE.Vector2(x, -y),
+      new THREE.Vector2(x, -y),
+      new THREE.Vector2(x, -x),
+      new THREE.Vector2(y, -x),
+      new THREE.Vector2(y, x),
+      new THREE.Vector2(x, x),
+      new THREE.Vector2(x, y),
+      new THREE.Vector2(-x, y),
+      new THREE.Vector2(-x, x),
+      new THREE.Vector2(-y, x),
+    ];
+    const shapes = new THREE.Shape(points);
+    return new THREE.ShapeGeometry(shapes, 24);
   }
 }

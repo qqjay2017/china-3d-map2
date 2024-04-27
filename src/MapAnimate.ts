@@ -66,6 +66,7 @@ export class MapAnimate extends MapBase {
         this.interactionManager.update &&
         this.interactionManager.update(1000);
   }
+  // 初始化环境光
   initEnvironment() {
     const globalLight = new THREE.AmbientLight(16777215, 5);
     this.scene.add(globalLight);
@@ -102,47 +103,51 @@ export class MapAnimate extends MapBase {
     z: number;
   }) {
     const a = new THREE.PointLight(1924702, t.intensity, t.distance, 1);
-    a.position.set(t.x, t.y, t.z), this.scene.add(a);
+    a.position.set(t.x, t.y, t.z);
+    this.scene.add(a);
     return a;
   }
+  // 最底下蓝色地图
   createFloor() {
     let planeGeometry = new THREE.PlaneGeometry(20, 20);
-    const a = this.assets.instance.getResource("ocean");
-    (a.colorSpace = "srgb"),
-      (a.wrapS = 1000),
-      (a.wrapT = "1000"),
-      a.repeat.set(1, 1);
-    let material = new THREE.MeshBasicMaterial({ map: a, opacity: 1 }),
+    const ocean = this.assets.instance.getResource("ocean");
+    ocean.colorSpace = "srgb";
+    ocean.wrapS = 1000;
+    ocean.wrapT = "1000";
+    ocean.repeat.set(1, 1);
+    let material = new THREE.MeshBasicMaterial({ map: ocean, opacity: 1 }),
       mesh = new THREE.Mesh(planeGeometry, material);
-    mesh.rotateX(-Math.PI / 2),
-      mesh.position.set(0, -0.7, 0),
-      this.scene.add(mesh);
+    mesh.rotateX(-Math.PI / 2);
+    mesh.position.set(0, -0.7, 0);
+    this.scene.add(mesh);
   }
+  //  模糊的中国地图轮廓线
   createChinaBlurLine() {
     let planeGeometry = new THREE.PlaneGeometry(147, 147);
-    const a = this.assets.instance.getResource("chinaBlurLine");
-    a.colorSpace = "srgb";
-    a.wrapS = 1000;
-    a.wrapT = 1000;
-    a.generateMipmaps = !1;
+    const chinaBlurLine = this.assets.instance.getResource("chinaBlurLine");
+    chinaBlurLine.colorSpace = "srgb";
+    chinaBlurLine.wrapS = 1000;
+    chinaBlurLine.wrapT = 1000;
+    chinaBlurLine.generateMipmaps = !1;
 
-    a.minFilter = 1003;
+    chinaBlurLine.minFilter = 1003;
 
-    a.repeat.set(1, 1);
+    chinaBlurLine.repeat.set(1, 1);
 
     let meshBasicMaterial = new THREE.MeshBasicMaterial({
-        color: 4162253,
-        alphaMap: a,
-        transparent: !0,
-        opacity: 0.5,
-      }),
-      mesh = new THREE.Mesh(planeGeometry, meshBasicMaterial);
+      color: 4162253,
+      alphaMap: chinaBlurLine,
+      transparent: !0,
+      opacity: 0.5,
+    });
+    let mesh = new THREE.Mesh(planeGeometry, meshBasicMaterial);
     mesh.rotateX(-Math.PI / 2);
     mesh.position.set(-33.2, -0.5, -5.2);
     this.scene.add(mesh);
   }
+  // 生成圆点
   createGrid() {
-    new MapGrid(this, {
+    return new MapGrid(this, {
       gridSize: 50,
       gridDivision: 20,
       gridColor: 1788784,
