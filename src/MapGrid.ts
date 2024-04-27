@@ -163,6 +163,7 @@ export class MapGrid {
   init() {
     let gridGroup = new THREE.Group();
     gridGroup.name = "Grid";
+
     let gridHelp = this.createGridHelp();
     let shapes = this.createShapes();
     let point = this.createPoint();
