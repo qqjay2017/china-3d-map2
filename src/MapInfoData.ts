@@ -52,7 +52,7 @@ export class MapInfoData {
             const shape = new THREE.Shape();
             for (let i = 0; i < polygon.length; i++) {
               if (!polygon[i][0] || !polygon[i][1]) return !1;
-              console.log(polygon[i], "polygon[i]");
+
               const [x, y] = this.geoProjection(polygon[i]);
 
               if (i == 0) {
@@ -60,10 +60,9 @@ export class MapInfoData {
               }
               shape.lineTo(x, -y);
             }
-            console.log(shape, "shape");
+
             const shapeGeometry = new THREE.ShapeGeometry(shape);
             if (merge) {
-              console.log(shapeGeometry, "shapeGeometry");
               r.push(shapeGeometry);
             } else {
               const mesh = new THREE.Mesh(shapeGeometry, this.config.material);
@@ -147,8 +146,7 @@ export class MapLineInfoData {
     return group;
   }
   createLine2(e: any) {
-    //
-    console.log("createLine2");
+    // TODO
   }
   createLine(e: any) {
     const { material, renderOrder, type: t } = this.config;

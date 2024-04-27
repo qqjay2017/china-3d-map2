@@ -6,13 +6,13 @@ class GridShader {
   time;
   options;
   constructor({
-    material: i,
+    material,
     time,
-    size: t,
-    diffuseColor: r,
-    diffuseSpeed: s,
-    diffuseWidth: l,
-    diffuseDir: f,
+    size,
+    diffuseColor,
+    diffuseSpeed,
+    diffuseWidth,
+    diffuseDir,
   }: any) {
     this.time = time;
     let a = {
@@ -22,48 +22,49 @@ class GridShader {
       diffuseWidth: 10,
       diffuseDir: 1,
     };
-    (this.options = Object.assign({}, a, {
-      material: i,
-      size: t,
-      diffuseColor: r,
-      diffuseSpeed: s,
-      diffuseWidth: l,
-      diffuseDir: f,
-    })),
-      this.init();
+    this.options = Object.assign({}, a, {
+      material,
+      size,
+      diffuseColor,
+      diffuseSpeed,
+      diffuseWidth,
+      diffuseDir,
+    });
+
+    this.init();
   }
   init() {
-    let i: any = null,
-      {
-        material: e,
-        size: t,
-        diffuseColor: r,
-        diffuseSpeed: s,
-        diffuseWidth: l,
-        diffuseDir: f,
-      } = this.options,
-      a = t / s;
-    (e.onBeforeCompile = (o: any) => {
-      (i = o),
-        (o.uniforms = {
-          ...o.uniforms,
-          uTime: { value: 0 },
-          uSpeed: { value: s },
-          uWidth: { value: l },
-          uColor: { value: new THREE.Vector4(r) },
-          uDir: { value: f },
-        }),
-        (o.vertexShader = o.vertexShader.replace(
-          "void main() {",
-          `
+    let i: any = null;
+    const {
+      material,
+      size,
+      diffuseColor,
+      diffuseSpeed,
+      diffuseWidth,
+      diffuseDir,
+    } = this.options;
+    const a = size / diffuseSpeed;
+    material.onBeforeCompile = (o: any) => {
+      i = o;
+      o.uniforms = {
+        ...o.uniforms,
+        uTime: { value: 0 },
+        uSpeed: { value: diffuseSpeed },
+        uWidth: { value: diffuseWidth },
+        uColor: { value: new THREE.Color(diffuseColor) },
+        uDir: { value: diffuseDir },
+      };
+      o.vertexShader = o.vertexShader.replace(
+        "void main() {",
+        `
             varying vec3 vPosition;
             void main(){
               vPosition = position;
           `
-        )),
-        (o.fragmentShader = o.fragmentShader.replace(
-          "void main() {",
-          `
+      );
+      o.fragmentShader = o.fragmentShader.replace(
+        "void main() {",
+        `
             uniform float uTime;
             uniform float uSpeed;
             uniform float uWidth;
@@ -73,10 +74,10 @@ class GridShader {
             
             void main(){
           `
-        )),
-        (o.fragmentShader = o.fragmentShader.replace(
-          "#include <opaque_fragment>",
-          `
+      );
+      o.fragmentShader = o.fragmentShader.replace(
+        "#include <opaque_fragment>",
+        `
             #ifdef OPAQUE
             diffuseColor.a = 1.0;
             #endif
@@ -115,13 +116,13 @@ class GridShader {
               gl_FragColor = vec4(outgoingLight, 0.0);
             }
           `
-        ));
-    }),
-      this.time.on("tick", (o: any) => {
-        i &&
-          ((i.uniforms.uTime.value += o),
-          i.uniforms.uTime.value > a && (i.uniforms.uTime.value = 0));
-      });
+      );
+    };
+    this.time.on("tick", (o: any) => {
+      i &&
+        ((i.uniforms.uTime.value += o),
+        i.uniforms.uTime.value > a && (i.uniforms.uTime.value = 0));
+    });
   }
 }
 
@@ -152,6 +153,7 @@ export class MapGrid {
     };
     // 合并option
     this.options = Object.assign({}, defaultOptions, t);
+    console.log(this.options, "op");
     this.init();
   }
   init() {
@@ -160,7 +162,6 @@ export class MapGrid {
     let gridHelp = this.createGridHelp();
     let shapes = this.createShapes();
     let point = this.createPoint();
-    console.log(point, "point");
 
     gridGroup.add(gridHelp, shapes, point);
     gridGroup.position.copy(this.options.position);
@@ -219,7 +220,6 @@ export class MapGrid {
         vertices[m + 2] = z;
       }
     const geometry = new THREE.BufferGeometry();
-    console.log(vertices[0], "vertices");
 
     geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
     let pointsMaterial = new THREE.PointsMaterial({
@@ -232,11 +232,11 @@ export class MapGrid {
     return diffuse && this.diffuseShader(pointsMaterial), points;
   }
   setPointMode() {}
-  diffuseShader(i: THREE.PointsMaterial) {
+  diffuseShader(pointsMaterial: THREE.PointsMaterial) {
     let { gridSize, diffuseColor, diffuseSpeed, diffuseWidth } = this.options;
     return (
       new GridShader({
-        material: i,
+        material: pointsMaterial,
         time: this.time,
         size: gridSize,
         diffuseColor: diffuseColor,

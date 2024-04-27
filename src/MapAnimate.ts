@@ -12,6 +12,7 @@ import {
   MapLineInfoData,
   MapQuanzhouInfoData,
 } from "./MapInfoData";
+import { qzCenter } from "./consts";
 
 export class MapAnimate extends MapBase {
   pointCenter;
@@ -36,7 +37,7 @@ export class MapAnimate extends MapBase {
     _config: MapBaseConfig = {}
   ) {
     super(_canvas, _config);
-    this.pointCenter = [118.589421, 24.908853];
+    this.pointCenter = qzCenter;
     this.flyLineCenter = [119.476498, 29.898918];
     this.depth = 0.5;
     this.clicked = !1;
@@ -62,7 +63,7 @@ export class MapAnimate extends MapBase {
     this.defaultLightMaterial = null;
     this.initSetting();
     this.assets = new MapAssetsLoader(() => {
-      console.log("加载静态资源");
+      console.log("加载静态资源完成++开始动画效果");
       this.initEnvironment();
       this.createFloor();
       this.createChinaBlurLine();
@@ -116,10 +117,6 @@ export class MapAnimate extends MapBase {
           opacity: 1,
           ease: "circ.out",
           onComplete: () => {
-            console.log(
-              this.focusMapSideMaterial,
-              " this.focusMapSideMaterial"
-            );
             this.focusMapSideMaterial.transparent = !1;
           },
         }),
@@ -256,13 +253,14 @@ export class MapAnimate extends MapBase {
     return new MapGrid(this, {
       gridSize: 50,
       gridDivision: 20,
-      gridColor: 1788784,
+
       shapeSize: 0.5,
-      shapeColor: 2776970,
       pointSize: 0.1,
-      pointColor: 1396093,
-      diffuse: !0,
+      diffuse: true,
       diffuseSpeed: 10,
+      gridColor: 1788784,
+      pointColor: 1396093,
+      shapeColor: 2776970,
       diffuseColor: 3050457,
     });
   }
