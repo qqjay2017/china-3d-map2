@@ -71,7 +71,7 @@ class MapCameraInit {
   canvas;
   options;
   instance: any;
-  controls: any;
+  controls!: OrbitControls;
   constructor(
     {
       sizes: e,
@@ -111,9 +111,11 @@ class MapCameraInit {
     this.scene.add(this.instance);
   }
   setControls() {
-    (this.controls = new OrbitControls(this.instance, this.canvas)),
-      (this.controls.enableDamping = !0),
-      this.controls.update();
+    this.controls = new OrbitControls(this.instance, this.canvas);
+    this.controls.enableDamping = !0;
+    this.controls.maxDistance = 22;
+    this.controls.minDistance = 8;
+    this.controls.update();
   }
   resize() {
     (this.instance.aspect = this.sizes.width / this.sizes.height),

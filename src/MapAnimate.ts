@@ -190,7 +190,7 @@ export class MapAnimate extends MapBase {
     });
     this.createPointLight({
       color: "#1d5e5e",
-      intensity: 100,
+      intensity: 200,
       distance: 1e4,
       x: 0,
       y: 2,
