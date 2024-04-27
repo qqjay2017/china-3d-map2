@@ -43,7 +43,7 @@ class GridShader {
       diffuseWidth,
       diffuseDir,
     } = this.options;
-    const a = size / diffuseSpeed;
+    const sideSpeedRadio = size / diffuseSpeed;
     material.onBeforeCompile = (o: any) => {
       i = o;
       o.uniforms = {
@@ -54,6 +54,7 @@ class GridShader {
         uColor: { value: new THREE.Color(diffuseColor) },
         uDir: { value: diffuseDir },
       };
+
       o.vertexShader = o.vertexShader.replace(
         "void main() {",
         `
@@ -119,9 +120,12 @@ class GridShader {
       );
     };
     this.time.on("tick", (o: any) => {
-      i &&
-        ((i.uniforms.uTime.value += o),
-        i.uniforms.uTime.value > a && (i.uniforms.uTime.value = 0));
+      if (i) {
+        i.uniforms.uTime.value += o;
+        if (i.uniforms.uTime.value > sideSpeedRadio) {
+          i.uniforms.uTime.value = 0;
+        }
+      }
     });
   }
 }
@@ -153,7 +157,7 @@ export class MapGrid {
     };
     // 合并option
     this.options = Object.assign({}, defaultOptions, t);
-    console.log(this.options, "op");
+
     this.init();
   }
   init() {
