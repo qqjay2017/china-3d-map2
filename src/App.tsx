@@ -4,7 +4,10 @@ import { initChinaMap } from "./initChinaMap";
 
 function App() {
   useEffect(() => {
-    initChinaMap();
+    const mapInstance = initChinaMap();
+    return () => {
+      mapInstance && mapInstance.destroy && mapInstance.destroy();
+    };
   }, []);
 
   return (
