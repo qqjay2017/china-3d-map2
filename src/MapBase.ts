@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { geoProjectionScale } from "./consts";
 export class MapSizeInit extends EventEmitter {
   canvas: HTMLCanvasElement | HTMLElement | null;
   pixelRatio = 0;
@@ -106,7 +107,8 @@ class MapCameraInit {
     } else {
       this.instance = new THREE.PerspectiveCamera(45, e, 0.1, 2e3);
     }
-    this.instance.position.set(10, 10, 10), this.scene.add(this.instance);
+    this.instance.position.set(10, 10, 10);
+    this.scene.add(this.instance);
   }
   setControls() {
     (this.controls = new OrbitControls(this.instance, this.canvas)),
@@ -192,7 +194,7 @@ export class MapBase extends EventEmitter {
     super();
     const defaultConfig: MapBaseConfig = {
       geoProjectionCenter: [0, 0],
-      geoProjectionScale: 120,
+      geoProjectionScale: geoProjectionScale,
       geoProjectionTranslate: [0, 0],
       isOrthographic: !1,
     };

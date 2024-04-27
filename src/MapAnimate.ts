@@ -7,7 +7,11 @@ import { MapAssetsLoader } from "./DracoLoader";
 import { MapGrid } from "./MapGrid";
 import { GradientQuanzhou, GradientShader } from "./GradientShader";
 import gsap from "gsap";
-import { MapInfoData, MapLineInfoData } from "./MapInfoData";
+import {
+  MapInfoData,
+  MapLineInfoData,
+  MapQuanzhouInfoData,
+} from "./MapInfoData";
 
 export class MapAnimate extends MapBase {
   pointCenter;
@@ -32,7 +36,7 @@ export class MapAnimate extends MapBase {
     _config: MapBaseConfig = {}
   ) {
     super(_canvas, _config);
-    this.pointCenter = [120.109913, 29.181466];
+    this.pointCenter = [118.589421, 24.908853];
     this.flyLineCenter = [119.476498, 29.898918];
     this.depth = 0.5;
     this.clicked = !1;
@@ -327,10 +331,11 @@ export class MapAnimate extends MapBase {
   }
   createFujian() {
     let fujianJsonData = this.assets.instance.getResource("350000");
+
     const fujianMapInfoData = new MapInfoData(this, {
       data: fujianJsonData,
       center: this.pointCenter,
-      merge: !1,
+      merge: false,
       material: new THREE.MeshLambertMaterial({
         color: 1387591,
         transparent: !0,
@@ -367,13 +372,12 @@ export class MapAnimate extends MapBase {
     );
   }
   createQuanzhou() {
-    debugger;
     let quanzhouData = this.assets.instance.getResource("350500");
     const [a, s] = this.createProvinceMaterial();
-    debugger;
+
     this.focusMapTopMaterial = a;
     this.focusMapSideMaterial = s;
-    let e = new MapInfoData(this, {
+    let e = new MapQuanzhouInfoData(this, {
       center: this.pointCenter,
       position: new THREE.Vector3(0, 0, 0.11),
       data: quanzhouData,
