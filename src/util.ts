@@ -12,3 +12,14 @@ export const transfromGeoJSON = (worldData: any) => {
   }
   return worldData;
 };
+
+export function getGuid(len = 10, radix = 62) {
+  let chars =
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+  let uuid: string[] = [];
+  radix = radix || chars.length;
+  for (let i = 0; i < len; i++) {
+    uuid[i] = chars[0 | (Math.random() * radix)];
+  }
+  return uuid.join("");
+}

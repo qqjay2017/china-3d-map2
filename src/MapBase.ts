@@ -1,6 +1,6 @@
 import { EventEmitter } from "./EventEmitter";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
+import * as d3 from "d3-geo";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -189,11 +189,23 @@ export class MapBase extends EventEmitter {
   time: MapTimeInit;
   camera: MapCameraInit;
   renderer: MapRendererInit;
+  geoProjection;
   constructor(
     canvas: HTMLCanvasElement | HTMLElement,
     config: MapBaseConfig = {}
   ) {
     super();
+    this.geoProjection = (data: any) => {
+      let { geoProjectionCenter, geoProjectionScale, geoProjectionTranslate } =
+        this.config;
+      return (
+        d3
+          .geoMercator()
+          .center(geoProjectionCenter!)
+          .scale(geoProjectionScale!)
+          .translate(geoProjectionTranslate!)(data) || [0, 0]
+      );
+    };
     const defaultConfig: MapBaseConfig = {
       geoProjectionCenter: [0, 0],
       geoProjectionScale: geoProjectionScale,

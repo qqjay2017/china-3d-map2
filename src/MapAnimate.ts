@@ -12,7 +12,8 @@ import {
   MapLineInfoData,
   MapQuanzhouInfoData,
 } from "./MapInfoData";
-import { qzCenter } from "./consts";
+import { fujianLabels, qzCenter } from "./consts";
+import { Label3d } from "./create3DTag";
 
 export class MapAnimate extends MapBase {
   pointCenter;
@@ -21,7 +22,7 @@ export class MapAnimate extends MapBase {
   clicked;
   interactionManager;
   eventElement: any[];
-
+  labelGroup = new THREE.Group();
   assets: MapAssetsLoader;
   stats: any = null;
   rotateBorder1?: THREE.Mesh;
@@ -32,6 +33,8 @@ export class MapAnimate extends MapBase {
   defaultMaterial?: THREE.MeshStandardMaterial | null;
   defaultLightMaterial?: THREE.MeshStandardMaterial | null;
   quanzhouLineMaterial?: THREE.LineBasicMaterial | null;
+  label3d: Label3d;
+  otherLabel: any[] = [];
   constructor(
     _canvas: HTMLCanvasElement | HTMLElement,
     _config: MapBaseConfig = {}
@@ -58,6 +61,10 @@ export class MapAnimate extends MapBase {
       this.camera.instance
       //   this.canvas
     );
+    this.labelGroup = new THREE.Group();
+    this.label3d = new Label3d(this);
+    this.labelGroup.rotateX(-Math.PI / 2);
+    this.scene.add(this.labelGroup);
     this.eventElement = [];
     this.defaultMaterial = null;
     this.defaultLightMaterial = null;
@@ -69,6 +76,7 @@ export class MapAnimate extends MapBase {
       this.createChinaBlurLine();
       this.createGrid();
       this.createRotateBorder();
+      this.createLabel();
       this.createModel();
       // gsap开始
       const tl = gsap.timeline();
@@ -122,6 +130,20 @@ export class MapAnimate extends MapBase {
         }),
         "focusMapOpacity"
       );
+      this.otherLabel.map((e, i) => {
+        let dom = e.element.querySelector(".other-label");
+        console.log(dom, e, "other");
+        tl.add(
+          gsap.to(dom, {
+            duration: 1,
+            delay: 0.1 * i,
+            translateY: 0,
+            opacity: 1,
+            ease: "circ.out",
+          }),
+          "focusMapOpacity"
+        );
+      });
       this.quanzhouLineMaterial &&
         tl.add(
           gsap.to(this.quanzhouLineMaterial, {
@@ -167,7 +189,8 @@ export class MapAnimate extends MapBase {
       this.stats && this.stats.update(),
       this.interactionManager &&
         this.interactionManager.update &&
-        this.interactionManager.update(1000);
+        document.querySelector(".other-label");
+    this.interactionManager.update(1000);
   }
   // 初始化环境光
   initEnvironment() {
@@ -554,6 +577,68 @@ export class MapAnimate extends MapBase {
       [t, s]
     );
   }
+  createLabel() {
+    let that = this;
+    const labelGroup = this.labelGroup;
+    const label3d = this.label3d;
+    const e: any[] = [];
+    fujianLabels.map((data) => {
+      if (data.hide == true) return false;
+      let h = createLabelDiv(data, label3d, labelGroup);
+      e.push(h);
+    });
 
+    const quanzhouLabel = createQuanzhouabel(
+      {
+        name: "泉州市",
+        center: [118.589421, 24.908853],
+        centroid: [118.267651, 25.202187],
+      },
+      label3d,
+      labelGroup
+    );
+
+    e.push(quanzhouLabel);
+    this.otherLabel = e;
+    function createLabelDiv(
+      data: any,
+      label3d: Label3d,
+      labelGroup: THREE.Group
+    ) {
+      let tag = label3d.create(
+        "",
+        `fujian-label ${data.blur ? " blur" : ""}`,
+        !1
+      );
+      const [x, y] = that.geoProjection(data.centroid);
+      return (
+        tag.init(
+          `<div class="other-label">${data.name}</div>`,
+          new THREE.Vector3(x, -y, 0.4)
+        ),
+        label3d.setLabelStyle(tag, 0.02, "x"),
+        tag.setParent(labelGroup),
+        tag
+      );
+    }
+    function createQuanzhouabel(
+      data: any,
+      label3d: Label3d,
+      labelGroup: THREE.Group
+    ) {
+      let d = label3d.create("", "quanzhou-label", !1);
+      const [g, m] = that.geoProjection(data.centroid);
+
+      return (
+        d.init(
+          `<div class="other-label"><span>${data.name}</span></div>`,
+          new THREE.Vector3(g, -m, 0.4)
+        ),
+        label3d.setLabelStyle(d, 0.02, "x"),
+        d.setParent(labelGroup),
+        d
+      );
+    }
+  }
   createBar() {}
 }
