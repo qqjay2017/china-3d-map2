@@ -48,11 +48,12 @@ export class MapAssetsLoader {
       { type: "Texture", name: "pathLine", path: "/pathLine2.png" },
       { type: "Texture", name: "arrow", path: arrow },
       { type: "Texture", name: "point", path: point },
-      { type: "File", name: "zhejiang", path: "/浙江省.json" },
+      { type: "File", name: "350500", path: "/350500_full.json" },
+
       {
         type: "File",
-        name: "china",
-        path: "/中华人民共和国.json",
+        name: "350000",
+        path: "/350000_full.json",
       },
     ];
     this.instance.loadAll(a);
